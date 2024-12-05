@@ -1,0 +1,143 @@
+openapi: 3.0.3
+info:
+  title: codegen
+  version: v1
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Development server
+
+paths:
+  /all-in-one/{name}:
+    post:
+      description: all in one
+      parameters:
+        - $ref: "#/components/parameters/QueryParam"
+        - $ref: "#/components/parameters/XIDHeader"
+        - $ref: "#/components/parameters/AcceptLanguage"
+        - $ref: "#/components/parameters/CustomerName"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BodyRequest"
+      responses:
+        '200':
+          description: created orders details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AllInOneResponse"
+
+
+security:
+  - bearerAuth: [ ]
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    QueryParam:
+      name: query
+      in: query
+      description: The search query.
+      schema:
+        type: string
+    XIDHeader:
+      name: X-ID
+      in: header
+      required: true
+      description: The user ID.
+      schema:
+        type: string
+        format: uuid
+    AcceptLanguage:
+      in: header
+      description: User selected language
+      name: Accept-Language
+      schema:
+        type: string
+
+    CustomerName:
+      name: name
+      in: path
+      required: true
+      description: The name of the user.
+      schema:
+        type: string
+
+    CustomerSurname:
+      name: surname
+      in: path
+      required: true
+      description: The surname of the user.
+      schema:
+        type: string
+
+  schemas:
+    Error:
+      required: [ message, code ]
+      properties:
+        code:
+          $ref: "#/components/schemas/ErrorCode"
+        message:
+          type: string
+        details:
+          type: string
+
+    ErrorCode:
+      type: integer
+      description: contains HTTP error codes and specific business logic error codes (the last must be >= 1000).
+      enum:
+        - 1000
+      x-enum-varnames:
+        - ErrorCreateMessageError
+      minimum: 400
+
+    BodyRequest:
+      required: [ messageBody ]
+      properties:
+        messageBody:
+          type: string
+          minLength: 1
+          maxLength: 3000
+
+    AllInOneResponse:
+      properties:
+        data:
+          $ref: "#/components/schemas/AllInOneDataResponse"
+        error:
+          $ref: "#/components/schemas/Error"
+
+    AllInOneDataResponse:
+      required: [ messageId, authorId, createdAt, name ]
+      properties:
+        createdAt:
+          type: string
+          format: date-time
+        authorId:
+          type: string
+        messageId:
+          type: string
+        queryParam:
+          type: string
+        name:
+          type: string
+
+    BodyResponse:
+      properties:
+        data:
+          $ref: "#/components/schemas/DummyResponse"
+        error:
+          $ref: "#/components/schemas/Error"
+
+    DummyResponse:
+      required: [ orderId ]
+      properties:
+        orderId:
+          type: string
